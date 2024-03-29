@@ -1,4 +1,4 @@
-# Next.js Project Template
+# Simple Data Table
 
 - Next.js
 - TailwindCSS
@@ -6,14 +6,6 @@
 - ESLint
 - Prettier
 
-## Update all packages
-
-```bash
-npm install -g npm-check-updates
-ncu --upgrade
-```
-
-## TODOs
-
-- [ ] Add generic favicon setup
-- [ ] Add dependabot
+- shadcn/ui
+- shadcn/data-table
+- TanStack/Table
