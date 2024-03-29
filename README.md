@@ -6,6 +6,8 @@
 - ESLint
 - Prettier
 
-- shadcn/ui
+---
+
+- shadcn/ui\*
 - shadcn/data-table
 - TanStack/Table
