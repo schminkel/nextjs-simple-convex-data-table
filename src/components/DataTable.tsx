@@ -12,9 +12,12 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import { useMutation, useQuery } from "convex/react";
 import { ArrowUpDown } from "lucide-react";
 import * as React from "react";
+import { PropagateLoader } from "react-spinners";
 
+import { api } from "../../convex/_generated/api";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import EditableCell from "./ui/editable-cell";
@@ -28,32 +31,8 @@ import {
   TableRow,
 } from "./ui/table";
 
-const data: Payment[] = [
-  {
-    id: "m5gr84i9",
-    email: "ken99@yahoo.com",
-  },
-  {
-    id: "3u1reuv4",
-    email: "Abe45@gmail.com",
-  },
-  {
-    id: "derv1ws0",
-    email: "Monserrat44@gmail.com",
-  },
-  {
-    id: "5kma53ae",
-    email: "Silas22@gmail.com",
-  },
-  {
-    id: "bhqecj4p",
-    email: "carmella@hotmail.com",
-  },
-];
-
 export type Payment = {
-  id: string;
-  email: string;
+  text: string;
 };
 
 export const columns: ColumnDef<Payment>[] = [
@@ -83,27 +62,28 @@ export const columns: ColumnDef<Payment>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "email",
+    accessorKey: "text",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Email
+          Text
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    //cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
     cell: EditableCell,
   },
 ];
 
 export function DataTable() {
+  const myData = useQuery(api.data.get) || [];
+  const updateTextById = useMutation(api.data.updateTextById);
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
-  const [myData, setMyData] = React.useState<Payment[]>(data);
 
   const table = useReactTable({
     data: myData,
@@ -119,21 +99,15 @@ export function DataTable() {
       rowSelection,
     },
     meta: {
-      updateData: (rowIndex: number, columnId: any, value: any) =>
-        setMyData((prev) =>
-          prev.map((row, index) =>
-            index === rowIndex
-              ? {
-                  ...prev[rowIndex],
-                  [columnId]: value,
-                }
-              : row,
-          ),
-        ),
+      updateData: (rowIndex: number, columnId: any, value: any) => {
+        const _id = myData[rowIndex]._id;
+        updateTextById({ id: _id, text: value });
+        console.log("### update: ", _id, value);
+      },
     },
   });
 
-  //console.log("data: ", myData);
+  // console.log("### table: ", table);
 
   return (
     <div className="w-full">
@@ -141,10 +115,10 @@ export function DataTable() {
       <div className="flex items-center py-4">
         <Input
           className="max-w-sm"
-          placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter text..."
+          value={(table.getColumn("text")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
+            table.getColumn("text")?.setFilterValue(event.target.value)
           }
         />
       </div>
@@ -191,7 +165,9 @@ export function DataTable() {
                   className="h-24 text-center"
                   colSpan={columns.length}
                 >
-                  No results.
+                  <p>
+                    <PropagateLoader color="#000000" />
+                  </p>
                 </TableCell>
               </TableRow>
             )}
